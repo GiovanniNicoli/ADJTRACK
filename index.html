@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gioco degli Aggettivi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* A simple fade-in animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+    </style>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="bg-gradient-to-br from-blue-100 to-indigo-200">
+    <div id="app-container" class="min-h-screen w-full flex items-center justify-center p-4">
+        <!-- The game will be rendered here by JavaScript -->
+    </div>
+
+    <script>
+        // --- CONSTANTS ---
+        const PCS_BASE_URL = 'https://giovanninicoli.github.io/AGGETTIVI/AGGETTIVI%20-%20CONTRAPPOSIZIONE/PCS/';
+        const PICTURES_BASE_URL = 'https://giovanninicoli.github.io/AGGETTIVI/AGGETTIVI%20-%20CONTRAPPOSIZIONE/ASSOCIAZIONI/';
+
+        const PCS_QUESTIONS = [
+            { question: 'è aperto', correct: 'aperto.png', incorrect: 'chiuso.png' },
+            { question: 'è chiuso', correct: 'chiuso.png', incorrect: 'aperto.png' },
+            { question: 'è bello', correct: 'bello.png', incorrect: 'brutto.png' },
+            { question: 'è brutto', correct: 'brutto.png', incorrect: 'bello.png' },
+            { question: 'è chiaro', correct: 'chiaro.png', incorrect: 'scuro.png' },
+            { question: 'è scuro', correct: 'scuro.png', incorrect: 'chiaro.png' },
+            { question: 'è caldo', correct: 'caldo.png', incorrect: 'freddo.png' },
+            { question: 'è freddo', correct: 'freddo.png', incorrect: 'caldo.png' },
+            { question: 'è felice', correct: 'felice.png', incorrect: 'triste.png' },
+            { question: 'è triste', correct: 'triste.png', incorrect: 'felice.png' },
+            { question: 'è piccolo', correct: 'piccolo.png', incorrect: 'grande.png' },
+            { question: 'è grande', correct: 'grande.png', incorrect: 'piccolo.png' },
+            { question: 'è pieno', correct: 'pieno.png', incorrect: 'vuoto.png' },
+            { question: 'è vuoto', correct: 'vuoto.png', incorrect: 'pieno.png' },
+            { question: 'è poco', correct: 'poco.png', incorrect: 'molto.png' },
+            { question: 'è tanto', correct: 'molto.png', incorrect: 'poco.png' },
+            { question: 'è pulito', correct: 'pulito.png', incorrect: 'sporco.png' },
+            { question: 'è sporco', correct: 'sporco.png', incorrect: 'pulito.png' },
+            { question: 'è corto', correct: 'corto.png', incorrect: 'lungo.png' },
+            { question: 'è lungo', correct: 'lungo.png', incorrect: 'corto.png' },
+            { question: 'è veloce', correct: 'veloce.png', incorrect: 'lento.png' },
+            { question: 'è lento', correct: 'lento.png', incorrect: 'veloce.png' },
+            { question: 'è giovane', correct: 'giovane.png', incorrect: 'vecchio.png' },
+            { question: 'è vecchio', correct: 'vecchio.png', incorrect: 'giovane.png' },
+            { question: 'è magro', correct: 'magro.png', incorrect: 'grosso.png' },
+            { question: 'è grosso', correct: 'grosso.png', incorrect: 'magro.png' }
+        ];
+
+        const PICTURES_QUESTIONS = [
+            { question: "L'ASTUCCIO APERTO", correct: 'ASTUCCIO APERTO.png', incorrect: 'ASTUCCIO CHIUSO.png' },
+            { question: "L'ASTUCCIO CHIUSO", correct: 'ASTUCCIO CHIUSO.png', incorrect: 'ASTUCCIO APERTO.png' },
+            { question: "L'ASTUCCIO PIENO", correct: 'ASTUCCIO PIENO.png', incorrect: 'ASTUCCIO VUOTO.png' },
+            { question: "L'ASTUCCIO VUOTO", correct: 'ASTUCCIO VUOTO.png', incorrect: 'ASTUCCIO PIENO.png' },
+            { question: 'IL BAMBINO MAGRO', correct: 'BAMBINO MAGRO.png', incorrect: 'BAMBINO GRASSO.png' },
+            { question: 'IL BAMBINO GRASSO', correct: 'BAMBINO GRASSO.png', incorrect: 'BAMBINO MAGRO.png' },
+            { question: 'IL BARATTOLO APERTO', correct: 'BARATTOLO VUOTO.png', incorrect: 'BARATTOLO PIENO.png' },
+            { question: 'IL BARATTOLO CHIUSO', correct: 'BARATTOLO PIENO.png', incorrect: 'BARATTOLO VUOTO.png' },
+            { question: 'LA BOTTIGLIA PIENA', correct: 'BOTTIGLIA APERTA.png', incorrect: 'BOTTIGLIA VUOTA APERTA.png' },
+            { question: 'LA BOTTIGLIA VUOTA', correct: 'BOTTIGLIA VUOTA APERTA.png', incorrect: 'BOTTIGLIA APERTA.png' },
+            { question: 'LA BOTTIGLIA APERTA', correct: 'BOTTIGLIA APERTA.png', incorrect: 'BOTTIGLIA CHIUSA.png' },
+            { question: 'LA BOTTIGLIA CHIUSA', correct: 'BOTTIGLIA CHIUSA.png', incorrect: 'BOTTIGLIA APERTA.png' },
+            { question: 'IL CANCELLO APERTO', correct: 'CANCELLO APERTO.jpg', incorrect: 'CANCELLO CHIUSO.jpg' },
+            { question: 'IL CANCELLO CHIUSO', correct: 'CANCELLO CHIUSO.jpg', incorrect: 'CANCELLO APERTO.jpg' },
+            { question: 'I CAPELLI CORTI', correct: 'CAPELLI CORTI.png', incorrect: 'CAPELLI LUNGHI.png' },
+            { question: 'I CAPELLI LUNGHI', correct: 'CAPELLI LUNGHI.png', incorrect: 'CAPELLI CORTI.png' },
+            { question: 'IL COLLO CORTO', correct: 'COLLO CORTO.png', incorrect: 'COLLO LUNGO.png' },
+            { question: 'IL COLLO LUNGO', correct: 'COLLO LUNGO.png', incorrect: 'COLLO CORTO.png' },
+            { question: 'LA MATITA CORTA', correct: 'MATITA CORTA.png', incorrect: 'MATITA LUNGA.png' },
+            { question: 'LA MATITA LUNGA', correct: 'MATITA LUNGA.png', incorrect: 'MATITA CORTA.png' },
+            { question: 'IL NONNO MAGRO', correct: 'NONNO MAGRO.png', incorrect: 'NONNO GROSSO.png' },
+            { question: 'IL NONNO GROSSO', correct: 'NONNO GROSSO.png', incorrect: 'NONNO MAGRO.png' },
+            { question: 'IL PINGUINO GROSSO', correct: 'PINGUINO GROSSO.png', incorrect: 'PINGUINO MAGRO.png' },
+            { question: 'IL PINGUINO MAGRO', correct: 'PINGUINO MAGRO.png', incorrect: 'PINGUINO GROSSO.png' },
+            { question: 'LA BORSA APERTA', correct: 'BORSA APERTA.png', incorrect: 'BORSA CHIUSA.png' },
+            { question: 'LA BORSA CHIUSA', correct: 'BORSA CHIUSA.png', incorrect: 'BORSA APERTA.png' },
+            { question: 'LE SCARPE PULITE', correct: 'SCARPE PULITE.png', incorrect: 'SCARPE SPORCHE.png' },
+            { question: 'LE SCARPE SPORCHE', correct: 'SCARPE SPORCHE.png', incorrect: 'SCARPE PULITE.png' },
+            { question: 'IL SECCHIO PIENO', correct: 'SECCHIO PIENO.png', incorrect: 'SECCHIO VUOTO.png' },
+            { question: 'IL SECCHIO VUOTO', correct: 'SECCHIO VUOTO.png', incorrect: 'SECCHIO PIENO.png' },
+            { question: 'IL VESTITO CORTO', correct: 'VESTITO CORTO.png', incorrect: 'VESTITO LUNGO.png' },
+            { question: 'IL VESTITO LUNGO', correct: 'VESTITO LUNGO.png', incorrect: 'VESTITO CORTO.png' }
+        ];
+        
+        // --- ICONS ---
+        const CheckCircleIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1" class="w-48 h-48 md:w-64 md:h-64"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+        const XCircleIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1" class="w-48 h-48 md:w-64 md:h-64"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+
+        // --- APPLICATION STATE ---
+        let gameState = 'HOME'; // 'HOME', 'GAME', 'END'
+        let gameSettings = {
+            imageType: null, // 'pcs' or 'pictures'
+            feedbackDuration: 2,
+            targetScore: 10,
+        };
+        let score = 0;
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let isAnswering = false;
+
+        const appContainer = document.getElementById('app-container');
+
+        // --- SPEECH SYNTHESIS SERVICE ---
+        let bestItalianVoice = null;
+
+        const loadAndSelectVoice = () => {
+            if (!('speechSynthesis' in window)) return;
+            const voices = window.speechSynthesis.getVoices();
+            if (voices.length === 0) return;
+
+            const italianVoices = voices.filter(voice => voice.lang === 'it-IT');
+            if (italianVoices.length > 0) {
+                bestItalianVoice =
+                    italianVoices.find(v => /google/i.test(v.name)) ||
+                    italianVoices.find(v => !v.localService) ||
+                    italianVoices.find(v => v.default) ||
+                    italianVoices[0];
+            }
+        };
+
+        if ('speechSynthesis' in window) {
+            loadAndSelectVoice();
+            if (window.speechSynthesis.onvoiceschanged !== undefined) {
+                window.speechSynthesis.onvoiceschanged = loadAndSelectVoice;
+            }
+        }
+
+        const speak = (text) => {
+            if (!('speechSynthesis' in window)) {
+                console.error('Text-to-speech not supported.');
+                return;
+            }
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'it-IT';
+            utterance.rate = 1;
+            utterance.pitch = 1;
+            if (bestItalianVoice) {
+                utterance.voice = bestItalianVoice;
+            }
+            window.speechSynthesis.speak(utterance);
+        };
+        
+        // --- HELPER FUNCTIONS ---
+        const shuffleArray = (array) => {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        };
+
+        const getImageUrl = (filename) => {
+            const baseUrl = gameSettings.imageType === 'pcs' ? PCS_BASE_URL : PICTURES_BASE_URL;
+            return `${baseUrl}${filename.replace(/ /g, '%20')}`;
+        };
+
+        // --- GAME LOGIC ---
+        function handleStartGame() {
+            if (gameSettings.imageType) {
+                gameState = 'GAME';
+                score = 0;
+                questions = shuffleArray(gameSettings.imageType === 'pcs' ? PCS_QUESTIONS : PICTURES_QUESTIONS);
+                currentQuestionIndex = 0;
+                render();
+            }
+        }
+
+        function handleAnswer(selectedImage) {
+            if (isAnswering) return;
+            isAnswering = true;
+            
+            const currentQuestion = questions[currentQuestionIndex];
+            const isCorrect = selectedImage === currentQuestion.correct;
+            
+            if(isCorrect) {
+                score++;
+                showFeedback('correct');
+            } else {
+                score = Math.max(0, score - 1);
+                showFeedback('incorrect');
+            }
+
+            if (score >= gameSettings.targetScore) {
+                 setTimeout(() => {
+                    gameState = 'END';
+                    render();
+                }, gameSettings.feedbackDuration * 1000);
+            } else {
+                setTimeout(() => {
+                    currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
+                    isAnswering = false;
+                    render();
+                }, gameSettings.feedbackDuration * 1000);
+            }
+        }
+
+        function handlePlayAgain() {
+            gameState = 'HOME';
+            gameSettings.imageType = null;
+            render();
+        }
+
+        function showFeedback(type) {
+             const feedbackDiv = document.createElement('div');
+             feedbackDiv.className = 'absolute inset-0 bg-black/50 flex items-center justify-center rounded-3xl animate-fade-in';
+             
+             if (type === 'correct') {
+                 feedbackDiv.innerHTML = `<div class="text-green-400">${CheckCircleIcon}</div>`;
+             } else {
+                 feedbackDiv.innerHTML = `<div class="text-red-400">${XCircleIcon}</div>`;
+             }
+             
+             const gamePage = document.getElementById('game-page');
+             if (gamePage) {
+                gamePage.appendChild(feedbackDiv);
+             }
+        }
+
+        // --- RENDERING ---
+        function renderHomePage() {
+            appContainer.innerHTML = `
+                <div class="container mx-auto max-w-4xl">
+                    <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 text-center text-gray-800 animate-fade-in">
+                        <h1 class="text-4xl md:text-6xl font-bold text-indigo-600 mb-4">Gioco degli Aggettivi</h1>
+                        <p class="text-lg md:text-xl text-gray-600 mb-8">Un gioco per imparare il significato degli aggettivi.</p>
+
+                        <div class="space-y-8">
+                            <div>
+                                <h2 class="text-2xl font-semibold mb-4 text-indigo-500">1. Scegli il tipo di immagini</h2>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <button id="pcs-btn" class="p-6 rounded-2xl text-xl font-bold transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-sky-400 ${gameSettings.imageType === 'pcs' ? 'bg-sky-500 text-white shadow-lg' : 'bg-gray-200 hover:bg-sky-100'}">
+                                        Usa le PCS
+                                    </button>
+                                    <button id="pictures-btn" class="p-6 rounded-2xl text-xl font-bold transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-teal-400 ${gameSettings.imageType === 'pictures' ? 'bg-teal-500 text-white shadow-lg' : 'bg-gray-200 hover:bg-teal-100'}">
+                                        Usa le Figure
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div>
+                                    <h2 class="text-2xl font-semibold mb-4 text-indigo-500">2. Velocità</h2>
+                                    <div class="flex flex-col items-center">
+                                        <input id="duration-slider" type="range" min="1" max="5" value="${gameSettings.feedbackDuration}" class="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-500"/>
+                                        <span id="duration-label" class="mt-2 text-lg font-medium">${gameSettings.feedbackDuration} secondi di pausa</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h2 class="text-2xl font-semibold mb-4 text-indigo-500">3. Punteggio</h2>
+                                    <div class="flex flex-col items-center">
+                                        <input id="score-slider" type="range" min="5" max="25" step="5" value="${gameSettings.targetScore}" class="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-500"/>
+                                        <span id="score-label" class="mt-2 text-lg font-medium">Vinci a ${gameSettings.targetScore} punti</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pt-4">
+                                <button id="start-btn" class="w-full md:w-auto px-12 py-4 bg-green-500 text-white text-2xl font-bold rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:scale-100" ${!gameSettings.imageType ? 'disabled' : ''}>
+                                    INIZIA!
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            
+            // Add event listeners after rendering
+            const pcsBtn = document.getElementById('pcs-btn');
+            const picturesBtn = document.getElementById('pictures-btn');
+            const startBtn = document.getElementById('start-btn');
+            
+            pcsBtn.addEventListener('click', () => {
+                gameSettings.imageType = 'pcs';
+                pcsBtn.className = pcsBtn.className.replace('bg-gray-200 hover:bg-sky-100', 'bg-sky-500 text-white shadow-lg');
+                picturesBtn.className = picturesBtn.className.replace('bg-teal-500 text-white shadow-lg', 'bg-gray-200 hover:bg-teal-100');
+                startBtn.disabled = false;
+            });
+
+            picturesBtn.addEventListener('click', () => {
+                gameSettings.imageType = 'pictures';
+                picturesBtn.className = picturesBtn.className.replace('bg-gray-200 hover:bg-teal-100', 'bg-teal-500 text-white shadow-lg');
+                pcsBtn.className = pcsBtn.className.replace('bg-sky-500 text-white shadow-lg', 'bg-gray-200 hover:bg-sky-100');
+                startBtn.disabled = false;
+            });
+            
+            document.getElementById('duration-slider').addEventListener('input', (e) => {
+                gameSettings.feedbackDuration = Number(e.target.value);
+                document.getElementById('duration-label').textContent = `${gameSettings.feedbackDuration} secondi di pausa`;
+            });
+            
+            document.getElementById('score-slider').addEventListener('input', (e) => {
+                gameSettings.targetScore = Number(e.target.value);
+                document.getElementById('score-label').textContent = `Vinci a ${gameSettings.targetScore} punti`;
+            });
+
+            startBtn.addEventListener('click', handleStartGame);
+        }
+
+        function renderGamePage() {
+            const currentQuestion = questions[currentQuestionIndex];
+            if (!currentQuestion) {
+                 appContainer.innerHTML = `<div class="text-center text-2xl font-bold">Caricamento...</div>`;
+                 return;
+            }
+
+            speak(currentQuestion.question);
+            const shuffledOptions = shuffleArray([currentQuestion.correct, currentQuestion.incorrect]);
+
+            appContainer.innerHTML = `
+                <div class="container mx-auto max-w-4xl">
+                    <div id="game-page" class="relative w-full bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-6 md:p-10 flex flex-col items-center animate-fade-in">
+                        <div class="w-full flex justify-between items-center mb-6">
+                            <div class="text-2xl font-bold text-indigo-600">Punteggio: ${score}</div>
+                            <div class="text-2xl font-bold text-green-600">Obiettivo: ${gameSettings.targetScore}</div>
+                        </div>
+                        <div class="w-full bg-indigo-500 text-white rounded-2xl p-4 mb-8 shadow-lg">
+                            <h2 class="text-3xl md:text-4xl font-bold text-center">${currentQuestion.question}</h2>
+                        </div>
+                        <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
+                            ${shuffledOptions.map(option => `
+                                <div data-option="${option}" class="option-card aspect-square bg-gray-100 rounded-3xl overflow-hidden cursor-pointer transition-transform duration-300 transform hover:scale-105 hover:shadow-2xl border-4 border-transparent hover:border-indigo-400">
+                                    <img 
+                                        src="${getImageUrl(option)}" 
+                                        alt="${option}" 
+                                        class="w-full h-full object-contain p-4" 
+                                        onerror="this.onerror=null;this.src='https://via.placeholder.com/400?text=Image+not+found';"
+                                    />
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>`;
+            
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.addEventListener('click', () => handleAnswer(card.dataset.option));
+            });
+        }
+
+        function renderEndPage() {
+            appContainer.innerHTML = `
+                <div class="container mx-auto max-w-4xl">
+                    <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 text-center text-gray-800 animate-fade-in">
+                        <h1 class="text-5xl md:text-7xl font-bold text-green-500 mb-4">Congratulazioni!</h1>
+                        <p class="text-2xl md:text-3xl text-gray-600 mb-8">Hai raggiunto l'obiettivo!</p>
+                        <div class="text-9xl mb-10">🎉</div>
+                        <button id="play-again-btn" class="px-12 py-4 bg-indigo-500 text-white text-2xl font-bold rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 hover:bg-indigo-600">
+                            Gioca Ancora
+                        </button>
+                    </div>
+                </div>`;
+            
+            document.getElementById('play-again-btn').addEventListener('click', handlePlayAgain);
+        }
+
+        function render() {
+            switch (gameState) {
+                case 'GAME':
+                    renderGamePage();
+                    break;
+                case 'END':
+                    renderEndPage();
+                    break;
+                case 'HOME':
+                default:
+                    renderHomePage();
+                    break;
+            }
+        }
+
+        // Initial render
+        render();
+    </script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
